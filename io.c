@@ -28,45 +28,46 @@ typedef struct {
 		size_t n_blocks;
 		size_t n_ops;
 	} H;
-} TNOF;
+} M_FILE;
 
 size_t N_readACC = 0;
 size_t N_writeACC = 0;
 
-TNOF *open(const char *file_path, char mode) {
-    TNOF *file = (TNOF*)malloc(sizeof(TNOF));
-    if (!file) ERR_OUT("failed to malloc: %s", strerror(errno));
-    memset(file, 0, sizeof(*file)); // I know there is calloc
+M_FILE *open(const char *file_path, char mode) {
+   	M_FILE *file = (M_FILE*)malloc(sizeof(M_FILE));
+   	if (!file) ERR_OUT("failed to malloc: %s", strerror(errno));
+    	memset(file, 0, sizeof(*file)); // I know there is calloc
 
-    if (mode == 'A' || mode == 'a') {  		// Append (open existing)
-        file->F = fopen(file_path, "r+b");
-        if (!file->F) ERR_OUT("failed to open file for reading: %s", strerror(errno));
-        rewind(file->F);
-        fread(&file->H, sizeof(file->H), 1, file->F);
-    } else if (mode == 'N' || mode == 'n') {    // New file
-        file->F = fopen(file_path, "w+b");
-        if (!file->F) ERR_OUT("failed to open file for writing: %s", strerror(errno));
-        rewind(file->F);
-	FORCE_WRITE(file->F, &file->H, sizeof(file->H));
-    } else {
-	ERR_OUT("unrecongnized file format");
-    }
+	// Append (open existing)
+    	if (mode == 'A' || mode == 'a') {
+    		file->F = fopen(file_path, "r+b");
+    	    	if (!file->F) ERR_OUT("failed to open file for reading: %s", strerror(errno));
+    	    	rewind(file->F);
+    	    	fread(&file->H, sizeof(file->H), 1, file->F);
+    	} else if (mode == 'N' || mode == 'n') {    // New file
+		file->F = fopen(file_path, "w+b");
+    	    	if (!file->F) ERR_OUT("failed to open file for writing: %s", strerror(errno));
+    	    	rewind(file->F);
+    	    	FORCE_WRITE(file->F, &file->H, sizeof(file->H));
+    	} else {
+		ERR_OUT("unrecongnized file format");
+    	}
 
-    return file;
+    	return file;
 }
 
-void close(TNOF *file) {
+void close(M_FILE *file) {
     	rewind(file->F);
 	FORCE_WRITE(file->F, &file->H, sizeof(file->H));
     	fclose(file->F);
     	free(file);
 }
 
-size_t alloc_block(TNOF *file) {
+size_t alloc_block(M_FILE *file) {
 	return file->H.n_blocks = file->H.n_blocks + 1;
 }
 
-bool read_block(TNOF *file, size_t i, Block *buffer) {
+bool read_block(M_FILE *file, size_t i, Block *buffer) {
     	if (i <= file->H.n_blocks) {
 		fseek(file->F, i * sizeof(Block) + sizeof(file->H), SEEK_SET);
         	fread(buffer, sizeof(Block), 1, file->F);
@@ -78,7 +79,7 @@ bool read_block(TNOF *file, size_t i, Block *buffer) {
     	}
 }
 
-bool write_block(TNOF *file, size_t i, Block *buffer) {
+bool write_block(M_FILE *file, size_t i, Block *buffer) {
     	if (i <= file->H.n_blocks) {
 		fseek(file->F, i * sizeof(Block) + sizeof(file->H), SEEK_SET);
 		FORCE_WRITE(file->F, buffer, sizeof(*buffer));
@@ -88,4 +89,27 @@ bool write_block(TNOF *file, size_t i, Block *buffer) {
 		fprintf(stderr, "ERROR: block index %zu out of range\n", i);
 		return false;
     	}
+}
+
+#define INPUT(type, prompt) _Generic((type)0, \
+    size_t: input_size_t(prompt), \
+    char*: input_string(prompt) \
+)
+
+size_t input_size_t(const char* prompt) {
+	size_t val;
+ 	printf("%s", prompt);
+    	if (scanf("%zu", &val) != 1) {
+        	ERROR_OUT("invalid size_t input");
+	}
+	return val;
+}
+
+char* input_string(const char* prompt) {
+	static char buffer[256];
+	printf("%s", prompt);
+    	if (scanf("%255s", buffer) != 1) {
+		ERROR_OUT("invalid string input");
+	}
+	return buffer;
 }

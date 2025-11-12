@@ -1,4 +1,4 @@
-#include "io.c"
+#include <io.c>
 
 typedef struct {
 	size_t id;
@@ -43,7 +43,7 @@ bool deletel(TNOF *file, size_t idx) {
 }
 
 void insert(TNOF *file, Block *buffer, void *data) {
-	if (buffer->count >= BLOCK_CAPACITY) {
+	if (buffer->count >= ARR_LEN(buffer->items)) {
 		size_t i = alloc_block(file);
 		write_block(file, i, buffer);
 		buffer->count = 0;
@@ -87,9 +87,9 @@ TNOF *load_into(const char *file_path) {
 }
 
 void fragmentation(TNOF *file, size_t c1, size_t c2) {
-	TNOF *f1 = open("fragment1.data", 'N');
-	TNOF *f2 = open("fragment2.data", 'N');
-	TNOF *f3 = open("fragment3.data", 'N');
+	TNOF *f1 = open("./fragment1.data", 'N');
+	TNOF *f2 = open("./fragment2.data", 'N');
+	TNOF *f3 = open("./fragment3.data", 'N');
 
 	Block buf, buf1 = {0}, buf2 = {0}, buf3 = {0};
     	for (size_t i = 0; i < file->H.n_blocks; i++) {
@@ -124,7 +124,7 @@ int main(void) {
 	setvbuf(stderr, NULL, _IONBF, 0);
 
 	printf("=== START_Init === \n");
-	const char *path = "students.data";
+	const char *path = "./students.data";
 	TNOF *file = load_into(path);
 	printf("=== END_Init === \n");
 
