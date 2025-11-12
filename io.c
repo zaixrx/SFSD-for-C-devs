@@ -100,7 +100,7 @@ size_t input_size_t(const char* prompt) {
 	size_t val;
  	printf("%s", prompt);
     	if (scanf("%zu", &val) != 1) {
-        	ERROR_OUT("invalid size_t input");
+        	ERR_OUT("invalid size_t input");
 	}
 	return val;
 }
@@ -109,7 +109,7 @@ char* input_string(const char* prompt) {
 	static char buffer[256];
 	printf("%s", prompt);
     	if (scanf("%255s", buffer) != 1) {
-		ERROR_OUT("invalid string input");
+		ERR_OUT("invalid string input");
 	}
 	return buffer;
 }
