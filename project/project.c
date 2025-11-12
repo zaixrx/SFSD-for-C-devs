@@ -6,7 +6,7 @@ typedef struct {
 	bool is_alive;
 } Student;
 
-int search(TNOF *file, size_t idx, size_t *i, size_t *j) {
+int search(M_FILE *file, size_t idx, size_t *i, size_t *j) {
 	Block buf = {0};
 	for (*i = 0; *i < file->H.n_blocks; ++*i) {
 		read_block(file, *i, &buf);
@@ -17,7 +17,7 @@ int search(TNOF *file, size_t idx, size_t *i, size_t *j) {
 	return false;
 }
 
-bool deletep(TNOF *file, size_t idx) {
+bool deletep(M_FILE *file, size_t idx) {
 	size_t i, j;
 	Block buf1 = {0}, buf2 = {0};
 	if (!search(file, idx, &i, &j)) {
@@ -30,7 +30,7 @@ bool deletep(TNOF *file, size_t idx) {
 	return write_block(file, i, &buf1);
 }
 
-bool deletel(TNOF *file, size_t idx) {
+bool deletel(M_FILE *file, size_t idx) {
 	size_t i, j;
 	Block buf = {0};
 	if (!search(file, idx, &i, &j)) {
@@ -42,7 +42,7 @@ bool deletel(TNOF *file, size_t idx) {
 	return write_block(file, i, &buf);
 }
 
-void insert(TNOF *file, Block *buffer, void *data) {
+void insert(M_FILE *file, Block *buffer, void *data) {
 	if (buffer->count >= ARR_LEN(buffer->items)) {
 		size_t i = alloc_block(file);
 		write_block(file, i, buffer);
@@ -74,8 +74,8 @@ int should_continue() {
 	return read_char() == 'y';
 }
 
-TNOF *load_into(const char *file_path) {
-    	TNOF *file = open(file_path, 'N');
+M_FILE *load_into(const char *file_path) {
+    	M_FILE *file = open(file_path, 'N');
     	Block buffer = {0};
 	for (;;) {
 		Student *s = read_student();
@@ -86,10 +86,10 @@ TNOF *load_into(const char *file_path) {
 	return file;
 }
 
-void fragmentation(TNOF *file, size_t c1, size_t c2) {
-	TNOF *f1 = open("./fragment1.data", 'N');
-	TNOF *f2 = open("./fragment2.data", 'N');
-	TNOF *f3 = open("./fragment3.data", 'N');
+void fragmentation(M_FILE *file, size_t c1, size_t c2) {
+	M_FILE *f1 = open("./fragment1.data", 'N');
+	M_FILE *f2 = open("./fragment2.data", 'N');
+	M_FILE *f3 = open("./fragment3.data", 'N');
 
 	Block buf, buf1 = {0}, buf2 = {0}, buf3 = {0};
     	for (size_t i = 0; i < file->H.n_blocks; i++) {
@@ -125,7 +125,7 @@ int main(void) {
 
 	printf("=== START_Init === \n");
 	const char *path = "./students.data";
-	TNOF *file = load_into(path);
+	M_FILE *file = load_into(path);
 	printf("=== END_Init === \n");
 
 	printf("=== START_Fragmentation === \n");

@@ -4,7 +4,7 @@ typedef struct {
 	bool is_deleted;
 } Record;
 
-void GC_pass(TNOF *f) {
+void GC_pass(M_FILE *f) {
 	Block b_iter = {0};
 	Block b_load = {0};
 	size_t n_blocks = 0;
